@@ -13,15 +13,29 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "invalid JSON body" }, { status: 400 });
   }
 
-  const { productName, modelNumber, amazonUrl, rakutenUrl: rakutenUrlInput, yahooUrl: yahooUrlInput } = body;
+  const {
+    productName,
+    modelNumber,
+    amazonUrl,
+    rakutenUrl: rakutenUrlInput,
+    yahooUrl: yahooUrlInput,
+    imageUrl,
+    imageDescription,
+  } = body;
 
-  if (!productName || typeof productName !== "string" || !productName.trim()) {
-    return NextResponse.json({ error: "productName is required" }, { status: 400 });
+  const trimmedName = productName?.trim() || "";
+  const trimmedModelNumber = modelNumber?.trim() || "";
+
+  if (!trimmedName && !trimmedModelNumber) {
+    return NextResponse.json(
+      { error: "productName or modelNumber is required" },
+      { status: 400 }
+    );
   }
-  const trimmedName = productName.trim();
-  const trimmedModelNumber = modelNumber?.trim() || undefined;
-  // 型番が入力されていれば検索キーワードとして商品名より優先する
+
+  // 型番が入力されていれば検索キーワード・表示名として商品名より優先する
   const searchKeyword = trimmedModelNumber || trimmedName;
+  const displayName = trimmedName || trimmedModelNumber;
 
   const [searchedRakutenUrl, searchedYahooUrl] = await Promise.all([
     rakutenUrlInput
@@ -47,7 +61,16 @@ export async function POST(req: NextRequest) {
     yahoo: yahooUrl ? buildMoshimoLink("yahoo", yahooUrl) ?? yahooUrl : undefined,
   };
 
-  const prompt = buildArticlePrompt(trimmedName, trimmedModelNumber, affiliateLinks);
+  // 商品名・型番の両方がある場合のみ型番行を別途表示する（型番のみの場合はdisplayNameに既に含まれる）
+  const modelNumberForPrompt = trimmedName && trimmedModelNumber ? trimmedModelNumber : undefined;
+
+  const prompt = buildArticlePrompt({
+    displayName,
+    modelNumber: modelNumberForPrompt,
+    links: affiliateLinks,
+    imageUrl: imageUrl?.trim() || undefined,
+    imageDescription: imageDescription?.trim() || undefined,
+  });
 
   const response: GeneratePromptResponse = { prompt, affiliateLinks };
   return NextResponse.json(response);

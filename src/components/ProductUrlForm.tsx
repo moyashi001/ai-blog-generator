@@ -16,23 +16,31 @@ export default function ProductUrlForm({ onSubmit, loading, error }: Props) {
   const [amazonUrl, setAmazonUrl] = useState("");
   const [rakutenUrl, setRakutenUrl] = useState("");
   const [yahooUrl, setYahooUrl] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [imageDescription, setImageDescription] = useState("");
+
+  const canSubmit = !!(productName.trim() || modelNumber.trim());
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!productName.trim()) return;
+    if (!canSubmit) return;
     onSubmit({
-      productName: productName.trim(),
+      productName: productName.trim() || undefined,
       modelNumber: modelNumber.trim() || undefined,
       amazonUrl: amazonUrl.trim() || undefined,
       rakutenUrl: rakutenUrl.trim() || undefined,
       yahooUrl: yahooUrl.trim() || undefined,
+      imageUrl: imageUrl.trim() || undefined,
+      imageDescription: imageDescription.trim() || undefined,
     });
   }
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
       <div className={styles.field}>
-        <label htmlFor="productName">商品名</label>
+        <label htmlFor="productName">
+          商品名 <span className={styles.hint}>（型番のみでも可）</span>
+        </label>
         <input
           id="productName"
           className={styles.input}
@@ -41,13 +49,12 @@ export default function ProductUrlForm({ onSubmit, loading, error }: Props) {
           value={productName}
           onChange={(e) => setProductName(e.target.value)}
           disabled={loading}
-          required
         />
       </div>
 
       <div className={styles.field}>
         <label htmlFor="modelNumber">
-          型番 <span className={styles.hint}>（任意・入力時は楽天/Yahoo!の検索でこちらを優先）</span>
+          型番 <span className={styles.hint}>（商品名のみでも可・入力時は楽天/Yahoo!の検索でこちらを優先）</span>
         </label>
         <input
           id="modelNumber"
@@ -106,9 +113,39 @@ export default function ProductUrlForm({ onSubmit, loading, error }: Props) {
         />
       </div>
 
+      <div className={styles.field}>
+        <label htmlFor="imageUrl">
+          記事に載せる画像URL <span className={styles.hint}>（任意）</span>
+        </label>
+        <input
+          id="imageUrl"
+          className={styles.input}
+          type="url"
+          placeholder="https://example.com/my-photo.jpg"
+          value={imageUrl}
+          onChange={(e) => setImageUrl(e.target.value)}
+          disabled={loading}
+        />
+      </div>
+
+      <div className={styles.field}>
+        <label htmlFor="imageDescription">
+          画像の内容 <span className={styles.hint}>（任意・画像URL入力時に説明があると自然な位置に挿入されやすい）</span>
+        </label>
+        <input
+          id="imageDescription"
+          className={styles.input}
+          type="text"
+          placeholder="例: 実際に自宅で充電している様子"
+          value={imageDescription}
+          onChange={(e) => setImageDescription(e.target.value)}
+          disabled={loading}
+        />
+      </div>
+
       {error && <p className={styles.error}>{error}</p>}
 
-      <button type="submit" className={styles.submit} disabled={loading || !productName.trim()}>
+      <button type="submit" className={styles.submit} disabled={loading || !canSubmit}>
         {loading ? "生成中..." : "プロンプトを生成する"}
       </button>
     </form>

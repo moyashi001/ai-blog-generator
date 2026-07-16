@@ -1,18 +1,28 @@
 import "server-only";
 import { AffiliateLinks } from "@/types";
 
+const STYLE_GUIDE = `【文体の参考（ブログ「もや暮らし」https://moyagurashi.com/ のスタイルを踏襲）】
+- 一人称は「私」、ブログの署名は「もや暮らし」。「こんにちは、〜のもや暮らしです！」のような挨拶で書き出す。
+- 基本は です/ます調 だが、「まじで」「めんどくさい」のような口語的な言い回しも交えたカジュアルな敬体にする。
+- 冒頭で日常のちょっとした悩み・きっかけを語ってから商品紹介に入る（例：「みなさん、〜しませんか？」と読者に問いかける）。
+- 良かった点は3つ程度に整理し、気になった点（価格・機能面など）も正直に書く。「どんな人におすすめか／おすすめしないか」を明確に分ける。
+- 段落は短めにして改行を多く入れる。箇条書きや✅/❌/⚠️のような記号を要所で使い、視覚的に読みやすくする。
+- 商品リンクは「こちらからチェック」のように行動を促す一文とセットで本文中に自然に配置する。`;
+
 const TEMPLATE = `以下の商品について、WordPress（テーマ：SWELL）にそのまま貼り付けて公開できるブログ記事を作成してください。
 
 商品名：{{PRODUCT_NAME}}{{MODEL_NUMBER_LINE}}
 Amazonリンク：{{AMAZON_LINK}}
 楽天リンク：{{RAKUTEN_LINK}}
 Yahooリンク：{{YAHOO_LINK}}
+{{IMAGE_LINE}}
+${STYLE_GUIDE}
 
 【出力形式】
 - WordPressのブロックエディタ（Gutenberg）に直接貼り付けてもレイアウトが崩れないよう、HTML形式で出力してください（Markdownの「#」「*」などの記号は使わないでください）。
 - 見出しは<h2>・<h3>タグ、本文は<p>タグ、箇条書きは<ul><li>タグ、強調したい箇所は<strong>タグを使用してください。SWELL独自のショートコードは使わず、標準的なHTMLタグのみで構成してください。
 - 前置きや説明文、コードブロック記法（\`\`\`）は付けず、記事本文のHTMLのみを出力してください。
-- 文中（商品紹介部分やまとめ）に、上記のAmazon/楽天/Yahooリンクを<a href="URL" target="_blank" rel="nofollow noopener">テキスト</a>の形で自然に挿入してください。
+- 文中（商品紹介部分やまとめ）に、上記のAmazon/楽天/Yahooリンクを<a href="URL" target="_blank" rel="nofollow noopener">テキスト</a>の形で自然に挿入してください。{{IMAGE_INSTRUCTION}}
 
 【記事構成】
 1. 商品の概要
@@ -24,16 +34,28 @@ Yahooリンク：{{YAHOO_LINK}}
 
 SEOを意識して、自然な文章で書いてください。`;
 
-export function buildArticlePrompt(
-  productName: string,
-  modelNumber: string | undefined,
-  links: AffiliateLinks
-): string {
-  const modelNumberLine = modelNumber ? `\n型番：${modelNumber}` : "";
+export function buildArticlePrompt(params: {
+  displayName: string;
+  modelNumber?: string;
+  links: AffiliateLinks;
+  imageUrl?: string;
+  imageDescription?: string;
+}): string {
+  const { displayName, modelNumber, links, imageUrl, imageDescription } = params;
 
-  return TEMPLATE.replace("{{PRODUCT_NAME}}", productName)
+  const modelNumberLine = modelNumber ? `\n型番：${modelNumber}` : "";
+  const imageLine = imageUrl
+    ? `\n記事に組み込む画像URL：${imageUrl}\n画像の内容：${imageDescription || "（説明なし）"}`
+    : "";
+  const imageInstruction = imageUrl
+    ? ` また、上記の画像URLを<img src="${imageUrl}" alt="${imageDescription || displayName}" loading="lazy">の形で、画像の内容の説明に合う本文の位置に1箇所挿入してください。`
+    : "";
+
+  return TEMPLATE.replace("{{PRODUCT_NAME}}", displayName)
     .replace("{{MODEL_NUMBER_LINE}}", modelNumberLine)
     .replace("{{AMAZON_LINK}}", links.amazon ?? "（未設定）")
     .replace("{{RAKUTEN_LINK}}", links.rakuten ?? "（未設定）")
-    .replace("{{YAHOO_LINK}}", links.yahoo ?? "（未設定）");
+    .replace("{{YAHOO_LINK}}", links.yahoo ?? "（未設定）")
+    .replace("{{IMAGE_LINE}}", imageLine)
+    .replace("{{IMAGE_INSTRUCTION}}", imageInstruction);
 }
