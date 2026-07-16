@@ -3,7 +3,7 @@ import { AffiliateLinks } from "@/types";
 
 const TEMPLATE = `以下の商品について、WordPress（テーマ：SWELL）にそのまま貼り付けて公開できるブログ記事を作成してください。
 
-商品名：{{PRODUCT_NAME}}
+商品名：{{PRODUCT_NAME}}{{MODEL_NUMBER_LINE}}
 Amazonリンク：{{AMAZON_LINK}}
 楽天リンク：{{RAKUTEN_LINK}}
 Yahooリンク：{{YAHOO_LINK}}
@@ -24,8 +24,15 @@ Yahooリンク：{{YAHOO_LINK}}
 
 SEOを意識して、自然な文章で書いてください。`;
 
-export function buildArticlePrompt(productName: string, links: AffiliateLinks): string {
+export function buildArticlePrompt(
+  productName: string,
+  modelNumber: string | undefined,
+  links: AffiliateLinks
+): string {
+  const modelNumberLine = modelNumber ? `\n型番：${modelNumber}` : "";
+
   return TEMPLATE.replace("{{PRODUCT_NAME}}", productName)
+    .replace("{{MODEL_NUMBER_LINE}}", modelNumberLine)
     .replace("{{AMAZON_LINK}}", links.amazon ?? "（未設定）")
     .replace("{{RAKUTEN_LINK}}", links.rakuten ?? "（未設定）")
     .replace("{{YAHOO_LINK}}", links.yahoo ?? "（未設定）");
