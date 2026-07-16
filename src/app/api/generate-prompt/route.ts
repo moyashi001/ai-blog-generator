@@ -76,6 +76,10 @@ export async function POST(req: NextRequest) {
     yahoo: buildLinkInfo("yahoo", yahooUrl, yahooImageUrl),
   };
 
+  // 商品紹介カードに使う画像は1枚だけでよいので、Amazon→楽天→Yahoo!の優先順で最初に見つかったものを使う
+  const primaryImageUrl =
+    affiliateLinks.amazon?.imageUrl || affiliateLinks.rakuten?.imageUrl || affiliateLinks.yahoo?.imageUrl;
+
   // 商品名・型番の両方がある場合のみ型番行を別途表示する（型番のみの場合はdisplayNameに既に含まれる）
   const modelNumberForPrompt = trimmedName && trimmedModelNumber ? trimmedModelNumber : undefined;
 
@@ -83,6 +87,7 @@ export async function POST(req: NextRequest) {
     displayName,
     modelNumber: modelNumberForPrompt,
     links: affiliateLinks,
+    primaryImageUrl,
     imageUrl: imageUrl?.trim() || undefined,
     imageDescription: imageDescription?.trim() || undefined,
   });

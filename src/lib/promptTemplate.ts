@@ -1,5 +1,5 @@
 import "server-only";
-import { AffiliateLinkInfo, AffiliateLinks } from "@/types";
+import { AffiliateLinks } from "@/types";
 
 const STYLE_GUIDE = `【文体の参考（ブログ「もや暮らし」https://moyagurashi.com/ のスタイルを踏襲）】
 - 一人称は「私」、ブログの署名は「もや暮らし」。「こんにちは、〜のもや暮らしです！」のような挨拶で書き出す。
@@ -8,33 +8,40 @@ const STYLE_GUIDE = `【文体の参考（ブログ「もや暮らし」https://
 - 良かった点は3つ程度に整理し、気になった点（価格・機能面など）も正直に書く。「どんな人におすすめか／おすすめしないか」を明確に分ける。
 - 段落は短めにして改行を多く入れる。箇条書きや✅/❌/⚠️のような記号を要所で使い、視覚的に読みやすくする。`;
 
-const CARD_EXAMPLE = `<div style="border:1px solid #e0e0e0;border-radius:12px;padding:16px;display:flex;align-items:center;gap:16px;margin:24px 0;">
-  <img src="商品画像URL" alt="商品名" style="width:96px;height:96px;object-fit:contain;border-radius:8px;flex-shrink:0;">
-  <div style="flex:1;">
-    <p style="margin:0 0 8px;font-weight:bold;font-size:15px;">商品名</p>
-    <a href="アフィリエイトURL" target="_blank" rel="nofollow noopener" style="display:inline-block;background:#ff6b35;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:14px;">ストア名で見る</a>
+// もや暮らしの記事にある「画像1枚＋商品名＋Amazon/楽天/Yahoo!の3ボタン」形式のカード
+const CARD_EXAMPLE = `<div style="border:1px solid #e0e0e0;border-radius:12px;padding:16px;display:flex;gap:16px;margin:24px 0;flex-wrap:wrap;">
+  <img src="商品画像URL" alt="商品名" style="width:120px;height:120px;object-fit:contain;border-radius:8px;flex-shrink:0;">
+  <div style="flex:1;min-width:200px;">
+    <p style="margin:0 0 12px;font-weight:bold;font-size:15px;line-height:1.5;">商品名</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <a href="AmazonのアフィリエイトURL" target="_blank" rel="nofollow noopener" style="flex:1;min-width:100px;text-align:center;background:#ff9900;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:14px;">Amazonで見る</a>
+      <a href="楽天のアフィリエイトURL" target="_blank" rel="nofollow noopener" style="flex:1;min-width:100px;text-align:center;background:#bf3131;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:14px;">楽天市場で見る</a>
+      <a href="Yahoo!のアフィリエイトURL" target="_blank" rel="nofollow noopener" style="flex:1;min-width:100px;text-align:center;background:#5e8fd6;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:14px;">Yahoo!ショッピングで見る</a>
+    </div>
   </div>
 </div>`;
 
 const TEMPLATE = `以下の商品について、WordPress（テーマ：SWELL）にそのまま貼り付けて公開できるブログ記事を作成してください。
 
 商品名：{{PRODUCT_NAME}}{{MODEL_NUMBER_LINE}}
-{{AMAZON_LINE}}
-{{RAKUTEN_LINE}}
-{{YAHOO_LINE}}
+Amazonリンク：{{AMAZON_LINK}}
+楽天リンク：{{RAKUTEN_LINK}}
+Yahooリンク：{{YAHOO_LINK}}
+商品画像URL：{{PRIMARY_IMAGE_URL}}
 {{IMAGE_LINE}}
 ${STYLE_GUIDE}
 
 【アフィリエイトリンクの表示形式】
-上記の各リンクは単なるテキストリンクではなく、商品画像とボタンを含むカード形式のHTMLで表示してください。インラインCSSを使い、以下のような形にしてください（色やストア名は各ストアに合わせて調整可）。
+上記のAmazon/楽天/Yahooリンクは、1つの商品につき1つの「商品紹介カード」としてまとめて表示してください。画像1枚・商品名・3ストア分のボタンを横並びにした、以下のようなインラインCSSのHTMLにしてください。
 ${CARD_EXAMPLE}
-商品画像が指定されていないリンクは、上記のカードから<img>タグを省いた形（ボタンのみのカード）にしてください。リンクが「（未設定）」のストアはカード自体を出力しないでください。
+- 商品画像URLが指定されていない場合は<img>タグを省略し、ボタンだけのカードにしてください。
+- リンクが「（未設定）」のストアはそのストアのボタンだけを省略し、他のボタンは残してください。
 
 【出力形式】
 - WordPressのブロックエディタ（Gutenberg）に直接貼り付けてもレイアウトが崩れないよう、HTML形式で出力してください（Markdownの「#」「*」などの記号は使わないでください）。
 - 見出しは<h2>・<h3>タグ、本文は<p>タグ、箇条書きは<ul><li>タグ、強調したい箇所は<strong>タグを使用してください。SWELL独自のショートコードは使わず、標準的なHTMLタグのみで構成してください。
 - 前置きや説明文、コードブロック記法（\`\`\`）は付けず、記事本文のHTMLのみを出力してください。
-- 商品紹介部分とまとめの2箇所に、上記のアフィリエイトリンクカードを自然に配置してください。{{IMAGE_INSTRUCTION}}
+- 商品紹介部分とまとめの2箇所に、上記の商品紹介カードを自然に配置してください。{{IMAGE_INSTRUCTION}}
 
 【記事構成】
 1. 商品の概要
@@ -42,24 +49,19 @@ ${CARD_EXAMPLE}
 3. 実際の使用シーン
 4. メリット・デメリット
 5. 他製品との比較
-6. まとめ（購入を迷っている人への後押し。ここにもリンクカードを設置）
+6. まとめ（購入を迷っている人への後押し。ここにも商品紹介カードを設置）
 
 SEOを意識して、自然な文章で書いてください。`;
-
-function formatLinkLine(storeName: string, info?: AffiliateLinkInfo): string {
-  if (!info) return `${storeName}リンク：（未設定）`;
-  const imagePart = info.imageUrl ? `\n${storeName}商品画像：${info.imageUrl}` : `\n${storeName}商品画像：（なし）`;
-  return `${storeName}リンク：${info.url}${imagePart}`;
-}
 
 export function buildArticlePrompt(params: {
   displayName: string;
   modelNumber?: string;
   links: AffiliateLinks;
+  primaryImageUrl?: string;
   imageUrl?: string;
   imageDescription?: string;
 }): string {
-  const { displayName, modelNumber, links, imageUrl, imageDescription } = params;
+  const { displayName, modelNumber, links, primaryImageUrl, imageUrl, imageDescription } = params;
 
   const modelNumberLine = modelNumber ? `\n型番：${modelNumber}` : "";
   const imageLine = imageUrl
@@ -71,9 +73,10 @@ export function buildArticlePrompt(params: {
 
   return TEMPLATE.replace("{{PRODUCT_NAME}}", displayName)
     .replace("{{MODEL_NUMBER_LINE}}", modelNumberLine)
-    .replace("{{AMAZON_LINE}}", formatLinkLine("Amazon", links.amazon))
-    .replace("{{RAKUTEN_LINE}}", formatLinkLine("楽天", links.rakuten))
-    .replace("{{YAHOO_LINE}}", formatLinkLine("Yahoo", links.yahoo))
+    .replace("{{AMAZON_LINK}}", links.amazon?.url ?? "（未設定）")
+    .replace("{{RAKUTEN_LINK}}", links.rakuten?.url ?? "（未設定）")
+    .replace("{{YAHOO_LINK}}", links.yahoo?.url ?? "（未設定）")
+    .replace("{{PRIMARY_IMAGE_URL}}", primaryImageUrl ?? "（なし）")
     .replace("{{IMAGE_LINE}}", imageLine)
     .replace("{{IMAGE_INSTRUCTION}}", imageInstruction);
 }
