@@ -13,8 +13,6 @@ interface Props {
 export default function ProductUrlForm({ onSubmit, loading, error }: Props) {
   const [productName, setProductName] = useState("");
   const [amazonUrl, setAmazonUrl] = useState("");
-  const [rakutenUrl, setRakutenUrl] = useState("");
-  const [yahooUrl, setYahooUrl] = useState("");
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -22,8 +20,6 @@ export default function ProductUrlForm({ onSubmit, loading, error }: Props) {
     onSubmit({
       productName: productName.trim(),
       amazonUrl: amazonUrl.trim() || undefined,
-      rakutenUrl: rakutenUrl.trim() || undefined,
-      yahooUrl: yahooUrl.trim() || undefined,
     });
   }
 
@@ -41,11 +37,12 @@ export default function ProductUrlForm({ onSubmit, loading, error }: Props) {
           disabled={loading}
           required
         />
+        <span className={styles.hint}>楽天・Yahoo!ショッピングの商品リンクはこの商品名から自動検索します</span>
       </div>
 
       <div className={styles.field}>
         <label htmlFor="amazonUrl">
-          Amazon商品URL <span className={styles.hint}>（任意）</span>
+          Amazon商品URL <span className={styles.hint}>（任意・自動検索非対応のため手動入力）</span>
         </label>
         <input
           id="amazonUrl"
@@ -54,36 +51,6 @@ export default function ProductUrlForm({ onSubmit, loading, error }: Props) {
           placeholder="https://www.amazon.co.jp/dp/..."
           value={amazonUrl}
           onChange={(e) => setAmazonUrl(e.target.value)}
-          disabled={loading}
-        />
-      </div>
-
-      <div className={styles.field}>
-        <label htmlFor="rakutenUrl">
-          楽天商品URL <span className={styles.hint}>（任意）</span>
-        </label>
-        <input
-          id="rakutenUrl"
-          className={styles.input}
-          type="url"
-          placeholder="https://item.rakuten.co.jp/..."
-          value={rakutenUrl}
-          onChange={(e) => setRakutenUrl(e.target.value)}
-          disabled={loading}
-        />
-      </div>
-
-      <div className={styles.field}>
-        <label htmlFor="yahooUrl">
-          Yahoo!ショッピング商品URL <span className={styles.hint}>（任意）</span>
-        </label>
-        <input
-          id="yahooUrl"
-          className={styles.input}
-          type="url"
-          placeholder="https://store.shopping.yahoo.co.jp/..."
-          value={yahooUrl}
-          onChange={(e) => setYahooUrl(e.target.value)}
           disabled={loading}
         />
       </div>
