@@ -1,65 +1,58 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import ProductForm from "@/components/ProductForm";
+import ArticleResult from "@/components/ArticleResult";
+import { ArticleTemplate, GenerateArticleResponse } from "@/types";
 import styles from "./page.module.css";
 
 export default function Home() {
+  const [result, setResult] = useState<GenerateArticleResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(params: {
+    productName: string;
+    template: ArticleTemplate;
+    imageDescription?: string;
+  }) {
+    setLoading(true);
+    setError(null);
+    setResult(null);
+    try {
+      const res = await fetch("/api/generate-article", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(params),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error ?? `記事生成に失敗しました (${res.status})`);
+      }
+      const data: GenerateArticleResponse = await res.json();
+      setResult(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "記事生成に失敗しました");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className={styles.page}>
+      <header className={styles.header}>
+        <h1>AIブログ記事ジェネレーター</h1>
+        <p>商品名を入力するだけで、AIが紹介記事とアフィリエイトリンク・SNS投稿文を自動生成します。</p>
+      </header>
+
       <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+        <ProductForm onSubmit={handleSubmit} loading={loading} error={error} />
+        {result && (
+          <ArticleResult
+            result={result}
+            onArticleChange={(article) => setResult({ ...result, article })}
+          />
+        )}
       </main>
     </div>
   );
