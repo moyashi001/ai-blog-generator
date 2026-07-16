@@ -19,32 +19,17 @@
   font-size: 0.9rem;
 }
 
+.hint {
+  font-weight: 400;
+  color: #888;
+  font-size: 0.8rem;
+}
+
 .input {
   padding: 0.6rem 0.8rem;
   border: 1px solid #ccc;
   border-radius: 8px;
   font-size: 1rem;
-}
-
-.templateGroup {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.templateButton {
-  padding: 0.5rem 1rem;
-  border: 1px solid #ccc;
-  border-radius: 999px;
-  background: #fff;
-  cursor: pointer;
-  font-size: 0.9rem;
-}
-
-.templateButtonActive {
-  background: #171717;
-  color: #fff;
-  border-color: #171717;
 }
 
 .submit {

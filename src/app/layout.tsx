@@ -14,13 +14,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AIブログ記事ジェネレーター",
-  description: "商品名からAIがブログ記事・アフィリエイトリンク・SNS投稿文を自動生成するPWA",
+  title: "ブログ記事プロンプトジェネレーター",
+  description: "商品名とURLからアフィリエイトリンク付きのClaude Pro貼り付け用プロンプトを生成するPWA",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "AIブログ記事ジェネレーター",
+    title: "記事プロンプト生成",
   },
 };
 

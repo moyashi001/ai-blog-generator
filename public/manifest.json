@@ -1,7 +1,7 @@
 {
-  "name": "AIブログ記事ジェネレーター",
-  "short_name": "AI記事生成",
-  "description": "商品名からAIがブログ記事・アフィリエイトリンク・SNS投稿文を自動生成するPWA",
+  "name": "ブログ記事プロンプトジェネレーター",
+  "short_name": "記事プロンプト生成",
+  "description": "商品名とURLからアフィリエイトリンク付きのClaude Pro貼り付け用プロンプトを生成するPWA",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f4f5f7",

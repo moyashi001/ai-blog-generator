@@ -1,6 +1,8 @@
-# AIブログ記事ジェネレーター
+# ブログ記事プロンプトジェネレーター
 
-商品名を入力すると、Claude APIが商品紹介ブログ記事・SEOキーワード・アフィリエイトリンク・SNS投稿文を自動生成するPWA。
+商品名と商品URL（Amazon / 楽天 / Yahoo!ショッピング）を入力すると、もしもアフィリエイト経由のアフィリエイトリンクを差し込んだ「Claude Proに貼り付けるブログ記事生成プロンプト」を作成するPWA。
+
+アプリ自身は記事を生成しない。プロンプトを組み立てるだけで、実際の記事執筆はユーザーがClaude Pro（chat.claude.ai）に生成されたプロンプトを貼り付けて行う。外部AI APIを呼び出さないため、APIキーは一切不要。
 
 ## ディレクトリ構成
 
@@ -17,70 +19,68 @@ ai-blog-generator/
 │   │   ├── page.tsx            # メイン画面 (Client Component)
 │   │   ├── layout.tsx          # ルートレイアウト・PWAメタデータ
 │   │   └── api/
-│   │       ├── generate-article/route.ts  # 記事+リンク+SNS文をまとめて生成
-│   │       ├── analyze-image/route.ts     # 商品画像解析 (Claude Vision)
-│   │       ├── affiliate-links/route.ts   # アフィリエイトリンク単体取得
-│   │       ├── rewrite/route.ts           # 記事の校正・リライト
-│   │       └── sns-text/route.ts          # SNS投稿文単体生成
-│   ├── components/             # UIコンポーネント
+│   │       └── generate-prompt/route.ts  # アフィリエイトリンク生成＋プロンプト組み立て
+│   ├── components/
+│   │   ├── ProductUrlForm.tsx  # 商品名・各ストアURL入力フォーム
+│   │   ├── PromptResult.tsx    # 生成結果表示・コピーUI
+│   │   └── ServiceWorkerRegister.tsx
 │   ├── lib/
-│   │   ├── claude.ts           # Claude API呼び出し（サーバー専用）
-│   │   ├── amazon.ts           # Amazon PA-API + フォールバック（サーバー専用）
-│   │   ├── rakuten.ts          # 楽天市場商品検索API（サーバー専用）
 │   │   ├── moshimo.ts          # もしもアフィリエイトリンク生成（サーバー専用）
-│   │   ├── prompts.ts          # Claude向けプロンプトテンプレート
-│   │   └── markdown.ts         # 簡易Markdown→HTML変換
+│   │   └── promptTemplate.ts   # プロンプトテンプレート組み立て（サーバー専用）
 │   └── types/index.ts          # 型定義
 ├── .env.example                 # 環境変数テンプレート
 └── package.json
 ```
 
+## 動作の流れ
+
+1. 商品名・Amazon/楽天/Yahoo!の商品URL（いずれも任意、商品名のみ必須）を入力
+2. `/api/generate-prompt` が各URLを `MOSHIMO_LINK_TEMPLATE_*` に差し込み、もしもアフィリエイト経由のリンクを生成
+3. 商品名とアフィリエイトリンクを埋め込んだプロンプト文字列を返す
+4. 画面上でプロンプトを確認し、「プロンプトをコピー」→ Claude Pro（chat.claude.ai）に貼り付けて記事を生成する
+
 ## セキュリティ設計
 
-- APIキー（`CLAUDE_API_KEY` / `AMAZON_*` / `RAKUTEN_*` / `MOSHIMO_*`）はすべて **サーバー側の環境変数** としてのみ読み込まれる。
-- `NEXT_PUBLIC_` プレフィックスの環境変数は一切使用していないため、これらの値はビルド後のフロントエンドJSに含まれない。
-- キーを読むファイル（`src/lib/claude.ts` / `amazon.ts` / `rakuten.ts` / `moshimo.ts`）の先頭で `import "server-only"` を宣言しており、誤ってクライアントコンポーネントからimportした場合はビルドエラーになる。
-- フロントエンド（`src/components/*`, `src/app/page.tsx`）は `/api/*` の自前エンドポイントを `fetch` するのみで、外部APIには直接アクセスしない。
+- 外部AI APIを呼び出さないため、APIキーは存在しない。
+- もしもアフィリエイトのリンクテンプレート（`MOSHIMO_LINK_TEMPLATE_*`）はサーバー側の環境変数としてのみ読み込まれ、`NEXT_PUBLIC_` プレフィックスを使っていないためフロントエンドJSに含まれない。
+- `src/lib/moshimo.ts` / `promptTemplate.ts` の先頭で `import "server-only"` を宣言しており、誤ってクライアントコンポーネントからimportした場合はビルドエラーになる。
+- フロントエンドは `/api/generate-prompt` を `fetch` するのみ。
 
 ## セットアップ
 
 ```bash
 npm install
-cp .env.example .env.local   # 実際のAPIキーを .env.local に設定
+cp .env.example .env.local   # もしもアフィリエイトのリンクテンプレートを設定
 npm run dev                  # http://localhost:3000
 ```
 
-### 必要な環境変数（`.env.local`）
+### 環境変数（`.env.local`）
 
 | 変数 | 必須 | 説明 |
 | --- | --- | --- |
-| `CLAUDE_API_KEY` | ○ | 記事生成・画像解析に必須。[console.anthropic.com](https://console.anthropic.com/)で取得。 |
-| `RAKUTEN_APP_ID` | 記事生成機能に必須 | 楽天ウェブサービスで無料取得（審査不要）。 |
-| `RAKUTEN_AFFILIATE_ID` | 任意 | 設定すると楽天の検索結果にアフィリエイトURLが付与される。 |
-| `AMAZON_ACCESS_KEY` / `AMAZON_SECRET_KEY` / `AMAZON_ASSOCIATE_TAG` | 任意 | PA-API 5.0の認証情報。個人アソシエイトはアソシエイトリンク経由で一定の売上実績が無いと申請できないため、未設定時は検索リンクへのフォールバックで動作する。 |
-| `MOSHIMO_LINK_TEMPLATE_AMAZON` / `_RAKUTEN` / `_YAHOO` | 任意 | もしもアフィリエイト管理画面で発行した「プロモーションリンク（W2A / かんたんリンク）」のURLで、遷移先URL部分を `{{URL}}` に置き換えたテンプレート。設定すると各ストアへのリンクがもしもアフィリエイト経由になる。 |
+| `MOSHIMO_LINK_TEMPLATE_AMAZON` | 任意 | もしもアフィリエイト管理画面で発行したAmazon用プロモーションリンクのURLで、遷移先URL部分を`{{URL}}`に置き換えたテンプレート |
+| `MOSHIMO_LINK_TEMPLATE_RAKUTEN` | 任意 | 同上（楽天市場） |
+| `MOSHIMO_LINK_TEMPLATE_YAHOO` | 任意 | 同上（Yahoo!ショッピング） |
 
-もしもアフィリエイトには汎用の商品検索APIが公開されていないため、動的な商品URL生成にはW2A形式のプロモーションリンクテンプレートを利用する方式にしている。実際のパラメータ名・値はもしもアフィリエイト管理画面の「プロモーションリンク発行」画面で確認すること。
+未設定のストアは、入力した商品URLがそのままリンクとして使われる（アフィリエイト経由にはならない）。
+
+もしもアフィリエイト管理画面（https://af.moshimo.com/）で「プロモーション検索」から各ストアのプロモーションを選び、「かんたんリンク」または「プロモーションリンク発行」でリンクを発行し、末尾の `url=` 以降（遷移先の商品URL部分）だけを `{{URL}}` に置き換えて設定する。
+例: `MOSHIMO_LINK_TEMPLATE_AMAZON=https://af.moshimo.com/af/c/click?a_id=12345&p_id=678&pc_id=90&pl_id=111&url={{URL}}`
 
 ## 機能一覧
 
 1. 商品名入力フォーム
-2. 記事テンプレート選択（レビュー / 比較 / ランキング / 体験談）
-3. 商品画像アップロード → Claude Visionで解析 → 記事本文に反映
-4. Claude APIによるブログ記事生成（タイトル案・SEOキーワード・本文）
-5. Amazon / 楽天のアフィリエイトリンク自動生成
-6. SNS投稿文自動生成（X / Instagram / TikTok）
-7. 記事の校正・リライト
-8. コピー / 保存（.md） / 再校正の操作ボタン
-9. PWA対応（ホーム画面追加・オフラインキャッシュ）
-
-※ Amazonレビュー要約機能は、公式スクレイピングが利用規約違反・アカウント停止リスクを伴うため実装していません。
+2. Amazon / 楽天 / Yahoo!ショッピングの商品URL入力（任意）
+3. もしもアフィリエイト経由のアフィリエイトリンク自動生成
+4. Claude Pro貼り付け用のブログ記事生成プロンプトを自動生成
+5. 生成されたプロンプトのコピーUI
+6. PWA対応（ホーム画面追加・オフラインキャッシュ）
 
 ## デプロイ（Vercel）
 
 1. このリポジトリをGitHubにpush
 2. [vercel.com](https://vercel.com/) でGitHubリポジトリをインポート
-3. Vercelプロジェクトの Environment Variables に `.env.example` と同じキーを設定
+3. Vercelプロジェクトの Environment Variables に `MOSHIMO_LINK_TEMPLATE_*` を設定
 4. デプロイ（以後はpushで自動デプロイ）
 
 Service WorkerによるPWA機能を実機で検証するにはHTTPS配信が必要なため、Vercelのデプロイ後のURLで確認すること。
