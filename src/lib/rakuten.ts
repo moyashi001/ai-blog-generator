@@ -13,13 +13,19 @@ interface RakutenItem {
   itemName: string;
   itemUrl: string;
   affiliateUrl?: string;
+  mediumImageUrls?: { imageUrl: string }[];
 }
 
 interface RakutenSearchResponse {
   Items: { Item: RakutenItem }[];
 }
 
-export async function searchRakutenItemUrl(keyword: string): Promise<string | null> {
+export interface RakutenSearchResult {
+  url: string;
+  imageUrl?: string;
+}
+
+export async function searchRakutenItem(keyword: string): Promise<RakutenSearchResult | null> {
   const appId = process.env.RAKUTEN_APP_ID;
   const accessKey = process.env.RAKUTEN_ACCESS_KEY;
   const origin = process.env.RAKUTEN_APP_ORIGIN;
@@ -52,5 +58,8 @@ export async function searchRakutenItemUrl(keyword: string): Promise<string | nu
   const item = data.Items?.[0]?.Item;
   if (!item) return null;
 
-  return item.affiliateUrl || item.itemUrl;
+  return {
+    url: item.affiliateUrl || item.itemUrl,
+    imageUrl: item.mediumImageUrls?.[0]?.imageUrl,
+  };
 }

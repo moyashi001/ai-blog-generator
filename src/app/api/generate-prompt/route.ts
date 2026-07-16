@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { buildMoshimoLink } from "@/lib/moshimo";
 import { buildArticlePrompt } from "@/lib/promptTemplate";
-import { searchRakutenItemUrl } from "@/lib/rakuten";
-import { searchYahooItemUrl } from "@/lib/yahoo";
-import { AffiliateLinks, GeneratePromptRequest, GeneratePromptResponse } from "@/types";
+import { searchRakutenItem } from "@/lib/rakuten";
+import { searchYahooItem } from "@/lib/yahoo";
+import { AffiliateLinkInfo, AffiliateLinks, GeneratePromptRequest, GeneratePromptResponse } from "@/types";
 
 export async function POST(req: NextRequest) {
   let body: GeneratePromptRequest;
@@ -17,6 +17,7 @@ export async function POST(req: NextRequest) {
     productName,
     modelNumber,
     amazonUrl,
+    amazonImageUrl,
     rakutenUrl: rakutenUrlInput,
     yahooUrl: yahooUrlInput,
     imageUrl,
@@ -37,28 +38,42 @@ export async function POST(req: NextRequest) {
   const searchKeyword = trimmedModelNumber || trimmedName;
   const displayName = trimmedName || trimmedModelNumber;
 
-  const [searchedRakutenUrl, searchedYahooUrl] = await Promise.all([
+  const [searchedRakuten, searchedYahoo] = await Promise.all([
     rakutenUrlInput
       ? Promise.resolve(null)
-      : searchRakutenItemUrl(searchKeyword).catch((err) => {
+      : searchRakutenItem(searchKeyword).catch((err) => {
           console.error("Rakuten search failed:", err);
           return null;
         }),
     yahooUrlInput
       ? Promise.resolve(null)
-      : searchYahooItemUrl(searchKeyword).catch((err) => {
+      : searchYahooItem(searchKeyword).catch((err) => {
           console.error("Yahoo search failed:", err);
           return null;
         }),
   ]);
 
-  const rakutenUrl = rakutenUrlInput || searchedRakutenUrl;
-  const yahooUrl = yahooUrlInput || searchedYahooUrl;
+  const rakutenUrl = rakutenUrlInput || searchedRakuten?.url;
+  const rakutenImageUrl = rakutenUrlInput ? undefined : searchedRakuten?.imageUrl;
+  const yahooUrl = yahooUrlInput || searchedYahoo?.url;
+  const yahooImageUrl = yahooUrlInput ? undefined : searchedYahoo?.imageUrl;
+
+  function buildLinkInfo(
+    store: "amazon" | "rakuten" | "yahoo",
+    url: string | undefined,
+    linkImageUrl: string | undefined
+  ): AffiliateLinkInfo | undefined {
+    if (!url) return undefined;
+    return {
+      url: buildMoshimoLink(store, url) ?? url,
+      imageUrl: linkImageUrl,
+    };
+  }
 
   const affiliateLinks: AffiliateLinks = {
-    amazon: amazonUrl ? buildMoshimoLink("amazon", amazonUrl) ?? amazonUrl : undefined,
-    rakuten: rakutenUrl ? buildMoshimoLink("rakuten", rakutenUrl) ?? rakutenUrl : undefined,
-    yahoo: yahooUrl ? buildMoshimoLink("yahoo", yahooUrl) ?? yahooUrl : undefined,
+    amazon: buildLinkInfo("amazon", amazonUrl, amazonImageUrl?.trim() || undefined),
+    rakuten: buildLinkInfo("rakuten", rakutenUrl, rakutenImageUrl),
+    yahoo: buildLinkInfo("yahoo", yahooUrl, yahooImageUrl),
   };
 
   // 商品名・型番の両方がある場合のみ型番行を別途表示する（型番のみの場合はdisplayNameに既に含まれる）

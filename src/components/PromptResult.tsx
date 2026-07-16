@@ -19,22 +19,22 @@ export default function PromptResult({ result }: { result: GeneratePromptRespons
         <h3>アフィリエイトリンク</h3>
         <div className={styles.linkList}>
           {result.affiliateLinks.amazon ? (
-            <a className={styles.linkItem} href={result.affiliateLinks.amazon} target="_blank" rel="noopener noreferrer">
-              Amazon
+            <a className={styles.linkItem} href={result.affiliateLinks.amazon.url} target="_blank" rel="noopener noreferrer">
+              Amazon{result.affiliateLinks.amazon.imageUrl ? "（画像あり）" : ""}
             </a>
           ) : (
             <span className={styles.linkMissing}>Amazon: 未設定</span>
           )}
           {result.affiliateLinks.rakuten ? (
-            <a className={styles.linkItem} href={result.affiliateLinks.rakuten} target="_blank" rel="noopener noreferrer">
-              楽天市場
+            <a className={styles.linkItem} href={result.affiliateLinks.rakuten.url} target="_blank" rel="noopener noreferrer">
+              楽天市場{result.affiliateLinks.rakuten.imageUrl ? "（画像あり）" : ""}
             </a>
           ) : (
             <span className={styles.linkMissing}>楽天: 未設定</span>
           )}
           {result.affiliateLinks.yahoo ? (
-            <a className={styles.linkItem} href={result.affiliateLinks.yahoo} target="_blank" rel="noopener noreferrer">
-              Yahoo!ショッピング
+            <a className={styles.linkItem} href={result.affiliateLinks.yahoo.url} target="_blank" rel="noopener noreferrer">
+              Yahoo!ショッピング{result.affiliateLinks.yahoo.imageUrl ? "（画像あり）" : ""}
             </a>
           ) : (
             <span className={styles.linkMissing}>Yahoo!: 未設定</span>

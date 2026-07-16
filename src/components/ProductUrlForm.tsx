@@ -14,6 +14,7 @@ export default function ProductUrlForm({ onSubmit, loading, error }: Props) {
   const [productName, setProductName] = useState("");
   const [modelNumber, setModelNumber] = useState("");
   const [amazonUrl, setAmazonUrl] = useState("");
+  const [amazonImageUrl, setAmazonImageUrl] = useState("");
   const [rakutenUrl, setRakutenUrl] = useState("");
   const [yahooUrl, setYahooUrl] = useState("");
   const [imageUrl, setImageUrl] = useState("");
@@ -28,6 +29,7 @@ export default function ProductUrlForm({ onSubmit, loading, error }: Props) {
       productName: productName.trim() || undefined,
       modelNumber: modelNumber.trim() || undefined,
       amazonUrl: amazonUrl.trim() || undefined,
+      amazonImageUrl: amazonImageUrl.trim() || undefined,
       rakutenUrl: rakutenUrl.trim() || undefined,
       yahooUrl: yahooUrl.trim() || undefined,
       imageUrl: imageUrl.trim() || undefined,
@@ -79,6 +81,21 @@ export default function ProductUrlForm({ onSubmit, loading, error }: Props) {
           placeholder="https://www.amazon.co.jp/dp/..."
           value={amazonUrl}
           onChange={(e) => setAmazonUrl(e.target.value)}
+          disabled={loading}
+        />
+      </div>
+
+      <div className={styles.field}>
+        <label htmlFor="amazonImageUrl">
+          Amazon商品画像URL <span className={styles.hint}>（任意・カード風表示に使用）</span>
+        </label>
+        <input
+          id="amazonImageUrl"
+          className={styles.input}
+          type="url"
+          placeholder="https://m.media-amazon.com/images/..."
+          value={amazonImageUrl}
+          onChange={(e) => setAmazonImageUrl(e.target.value)}
           disabled={loading}
         />
       </div>

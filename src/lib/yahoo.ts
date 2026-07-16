@@ -9,13 +9,19 @@ const ENDPOINT = "https://shopping.yahooapis.jp/ShoppingWebService/V3/itemSearch
 interface YahooItem {
   name: string;
   url: string;
+  image?: { small?: string; medium?: string };
 }
 
 interface YahooSearchResponse {
   hits?: YahooItem[];
 }
 
-export async function searchYahooItemUrl(keyword: string): Promise<string | null> {
+export interface YahooSearchResult {
+  url: string;
+  imageUrl?: string;
+}
+
+export async function searchYahooItem(keyword: string): Promise<YahooSearchResult | null> {
   const appId = process.env.YAHOO_APP_ID;
   if (!appId) return null;
 
@@ -33,5 +39,8 @@ export async function searchYahooItemUrl(keyword: string): Promise<string | null
   const item = data.hits?.[0];
   if (!item) return null;
 
-  return item.url;
+  return {
+    url: item.url,
+    imageUrl: item.image?.medium || item.image?.small,
+  };
 }
