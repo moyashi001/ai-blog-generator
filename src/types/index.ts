@@ -1,5 +1,8 @@
 export interface GeneratePromptRequest {
-  // 商品名・型番のどちらか一方が入力されていればよい
+  // もしもアフィリエイト「かんたんリンク」の埋め込みコードを貼り付けた場合、
+  // 商品名・型番・画像・Amazon/楽天/Yahoo!リンクをすべてここから取得し、他の入力より優先する
+  moshimoEasyLinkHtml?: string;
+  // 商品名・型番のどちらか一方が入力されていればよい（かんたんリンク未使用時）
   productName?: string;
   // 型番が入力されていれば、楽天/Yahoo!の検索キーワードとして商品名より優先する
   modelNumber?: string;

@@ -11,6 +11,7 @@ interface Props {
 }
 
 export default function ProductUrlForm({ onSubmit, loading, error }: Props) {
+  const [moshimoEasyLinkHtml, setMoshimoEasyLinkHtml] = useState("");
   const [productName, setProductName] = useState("");
   const [modelNumber, setModelNumber] = useState("");
   const [amazonUrl, setAmazonUrl] = useState("");
@@ -20,12 +21,14 @@ export default function ProductUrlForm({ onSubmit, loading, error }: Props) {
   const [imageUrl, setImageUrl] = useState("");
   const [imageDescription, setImageDescription] = useState("");
 
-  const canSubmit = !!(productName.trim() || modelNumber.trim());
+  const useEasyLink = !!moshimoEasyLinkHtml.trim();
+  const canSubmit = useEasyLink || !!(productName.trim() || modelNumber.trim());
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!canSubmit) return;
     onSubmit({
+      moshimoEasyLinkHtml: moshimoEasyLinkHtml.trim() || undefined,
       productName: productName.trim() || undefined,
       modelNumber: modelNumber.trim() || undefined,
       amazonUrl: amazonUrl.trim() || undefined,
@@ -40,8 +43,27 @@ export default function ProductUrlForm({ onSubmit, loading, error }: Props) {
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
       <div className={styles.field}>
+        <label htmlFor="moshimoEasyLinkHtml">
+          もしもアフィリエイトの「かんたんリンク」埋め込みコード{" "}
+          <span className={styles.hint}>（任意・貼り付けると商品名・型番・画像・3ストアリンクを自動取得）</span>
+        </label>
+        <textarea
+          id="moshimoEasyLinkHtml"
+          className={styles.textarea}
+          placeholder="<!-- START MoshimoAffiliateEasyLink --> から始まる埋め込みコードをそのまま貼り付け"
+          value={moshimoEasyLinkHtml}
+          onChange={(e) => setMoshimoEasyLinkHtml(e.target.value)}
+          disabled={loading}
+          rows={4}
+        />
+        <span className={styles.hint}>
+          これを使う場合、下の商品名〜Yahoo!商品URLの入力は不要です（画像・型番より正確な各ストアリンクが自動取得されます）
+        </span>
+      </div>
+
+      <div className={styles.field}>
         <label htmlFor="productName">
-          商品名 <span className={styles.hint}>（型番のみでも可）</span>
+          商品名 <span className={styles.hint}>（型番のみでも可・かんたんリンク使用時は不要）</span>
         </label>
         <input
           id="productName"
@@ -50,7 +72,7 @@ export default function ProductUrlForm({ onSubmit, loading, error }: Props) {
           placeholder="例: Anker モバイルバッテリー 10000mAh"
           value={productName}
           onChange={(e) => setProductName(e.target.value)}
-          disabled={loading}
+          disabled={loading || useEasyLink}
         />
       </div>
 
@@ -65,7 +87,7 @@ export default function ProductUrlForm({ onSubmit, loading, error }: Props) {
           placeholder="例: A1257"
           value={modelNumber}
           onChange={(e) => setModelNumber(e.target.value)}
-          disabled={loading}
+          disabled={loading || useEasyLink}
         />
         <span className={styles.hint}>楽天・Yahoo!ショッピングの商品リンクは型番（未入力時は商品名）から自動検索します</span>
       </div>
@@ -81,7 +103,7 @@ export default function ProductUrlForm({ onSubmit, loading, error }: Props) {
           placeholder="https://www.amazon.co.jp/dp/..."
           value={amazonUrl}
           onChange={(e) => setAmazonUrl(e.target.value)}
-          disabled={loading}
+          disabled={loading || useEasyLink}
         />
       </div>
 
@@ -96,7 +118,7 @@ export default function ProductUrlForm({ onSubmit, loading, error }: Props) {
           placeholder="https://m.media-amazon.com/images/..."
           value={amazonImageUrl}
           onChange={(e) => setAmazonImageUrl(e.target.value)}
-          disabled={loading}
+          disabled={loading || useEasyLink}
         />
       </div>
 
@@ -111,7 +133,7 @@ export default function ProductUrlForm({ onSubmit, loading, error }: Props) {
           placeholder="https://item.rakuten.co.jp/..."
           value={rakutenUrl}
           onChange={(e) => setRakutenUrl(e.target.value)}
-          disabled={loading}
+          disabled={loading || useEasyLink}
         />
       </div>
 
@@ -126,7 +148,7 @@ export default function ProductUrlForm({ onSubmit, loading, error }: Props) {
           placeholder="https://store.shopping.yahoo.co.jp/..."
           value={yahooUrl}
           onChange={(e) => setYahooUrl(e.target.value)}
-          disabled={loading}
+          disabled={loading || useEasyLink}
         />
       </div>
 
