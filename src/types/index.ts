@@ -16,6 +16,9 @@ export interface GeneratePromptRequest {
   // 記事に組み込みたい画像（任意）
   imageUrl?: string;
   imageDescription?: string;
+  // 狙いたいSEOキーワード（任意・カンマ区切り。1つ目をメインキーワード、残りをサブキーワードとして扱う）
+  // 未入力の場合はClaude側にキーワードを自動選定させる
+  targetKeywords?: string;
 }
 
 export interface AffiliateLinkInfo {

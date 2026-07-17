@@ -24,6 +24,7 @@ export async function POST(req: NextRequest) {
     yahooUrl: yahooUrlInput,
     imageUrl,
     imageDescription,
+    targetKeywords,
   } = body;
 
   // もしもアフィリエイトの「かんたんリンク」埋め込みコードが貼られていれば、
@@ -117,6 +118,7 @@ export async function POST(req: NextRequest) {
     primaryImageUrl,
     imageUrl: imageUrl?.trim() || undefined,
     imageDescription: imageDescription?.trim() || undefined,
+    targetKeywords: targetKeywords?.trim() || undefined,
   });
 
   const response: GeneratePromptResponse = { prompt, affiliateLinks };

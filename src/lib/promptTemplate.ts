@@ -6,11 +6,12 @@ const STYLE_GUIDE = `【文体の参考（ブログ「もや暮らし」https://
 - 基本は です/ます調 だが、「まじで」「めんどくさい」のような口語的な言い回しも交えたカジュアルな敬体にする。
 - 冒頭で日常のちょっとした悩み・きっかけを語ってから商品紹介に入る（例：「みなさん、〜しませんか？」と読者に問いかける）。
 - 良かった点は3つ程度に整理し、気になった点（価格・機能面など）も正直に書く。「どんな人におすすめか／おすすめしないか」を明確に分ける。
-- 段落は短めにして改行を多く入れる。箇条書きや✅/❌/⚠️のような記号を要所で使い、視覚的に読みやすくする。`;
+- 段落は短めにして改行を多く入れる。箇条書きや✅/❌/⚠️のような記号を要所で使い、視覚的に読みやすくする。
+- 実際に使用した期間や充電にかかった体感時間など、一次体験らしい具体的な数字を1〜2箇所盛り込んでください（誇張はせず、一般的なレビュー傾向に基づいた自然な記述で構いません）。`;
 
 // もや暮らしの記事にある「画像1枚＋商品名＋Amazon/楽天/Yahoo!の3ボタン」形式のカード
 const CARD_EXAMPLE = `<div style="border:1px solid #e0e0e0;border-radius:12px;padding:16px;display:flex;gap:16px;margin:24px 0;flex-wrap:wrap;">
-  <img src="商品画像URL" alt="商品名" style="width:120px;height:120px;object-fit:contain;border-radius:8px;flex-shrink:0;">
+  <img src="商品画像URL" alt="商品名＋型番を含む説明的なテキスト" style="width:120px;height:120px;object-fit:contain;border-radius:8px;flex-shrink:0;">
   <div style="flex:1;min-width:200px;">
     <p style="margin:0 0 12px;font-weight:bold;font-size:15px;line-height:1.5;">商品名</p>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -32,11 +33,12 @@ Yahooリンク：{{YAHOO_LINK}}
 ${STYLE_GUIDE}
 
 【SEO・タイトルの指示】
-- 記事タイトル案を3つ提案してください。32文字前後を目安に、商品名・カテゴリ名に加えて「レビュー」「口コミ」「おすすめ」「比較」など検索されやすい語を自然に含めてください。
-- 検索結果に表示されるメタディスクリプションを120字程度で1つ作成してください（記事の要点＋読むメリットが伝わる文にする）。
-- 記事全体で狙うSEOキーワードを5つ程度（商品名・カテゴリ名・比較語・悩みワードなど検索ボリュームが見込める語）挙げてください。
+- 記事タイトル案を3つ提案してください。32文字以内を目安に、数字を使ったもの／悩み共感型／比較型など異なる切り口で1つずつ作成してください（【】や数字を使うとクリックされやすくなります）。
+- 検索結果に表示されるメタディスクリプションを120〜160字で1つ作成してください（記事の要点＋読むメリットが伝わる文にする）。
+- {{KEYWORD_INSTRUCTION}}
 - 本文の見出し（h2）にはSEOキーワードを自然に含めてください。
 - 記事冒頭2〜3文の導入部に主要キーワードを含め、読者の検索意図（購入を迷っている／レビューを知りたい）に応える一文を入れてください。
+- 全ての<img>タグのalt属性には、商品名＋型番を含む説明的なテキストを設定してください（例：「Anker Power Bank 10000mAh 22.5W A1257 ブラック モバイルバッテリー」）。
 
 【アフィリエイトリンクの表示形式】
 上記のAmazon/楽天/Yahooリンクは、1つの商品につき1つの「商品紹介カード」としてまとめて表示してください。画像1枚・商品名・3ストア分のボタンを横並びにした、以下のようなインラインCSSのHTMLにしてください。
@@ -46,14 +48,15 @@ ${CARD_EXAMPLE}
 
 【出力形式】
 以下の順番で出力してください。
-1. 【タイトル案】（3つ、箇条書き）
+1. 【タイトル案】（3つ、箇条書き。それぞれ切り口を明記）
 2. 【メタディスクリプション】
-3. 【SEOキーワード】（カンマ区切り）
+3. 【SEOキーワード】（メインキーワード／サブキーワードに分けて記載）
 4. 【記事本文】以下の条件のHTML
    - WordPressのブロックエディタ（Gutenberg）に直接貼り付けてもレイアウトが崩れないよう、HTML形式で出力する（Markdownの「#」「*」などの記号は使わない）
    - 見出しは<h2>・<h3>タグ、本文は<p>タグ、箇条書きは<ul><li>タグ、強調したい箇所は<strong>タグを使用する。SWELL独自のショートコードは使わず、標準的なHTMLタグのみで構成する
    - コードブロック記法（\`\`\`）は使わない
    - 商品紹介部分とまとめの2箇所に、上記の商品紹介カードを自然に配置する{{IMAGE_INSTRUCTION}}
+   - まとめの直前に、関連する過去記事へのリンクを促す一文（例：「他のおすすめガジェットはこちら」）をプレースホルダーとして入れる
 
 【記事構成（本文部分）】
 1. 商品の概要
@@ -61,9 +64,25 @@ ${CARD_EXAMPLE}
 3. 実際の使用シーン
 4. メリット・デメリット
 5. 他製品との比較
-6. まとめ（購入を迷っている人への後押し。ここにも商品紹介カードを設置）
+6. よくある質問（想定読者が検索しそうな質問を3〜4個、h3の質問＋pの回答というQ&A形式で作成。Googleの強調スニペットやFAQリッチリザルトを狙う）
+7. まとめ（購入を迷っている人への後押し。ここにも商品紹介カードを設置）
 
 自然な文章で書いてください。`;
+
+function formatKeywordInstruction(targetKeywords?: string): string {
+  const keywords = (targetKeywords ?? "")
+    .split(",")
+    .map((k) => k.trim())
+    .filter(Boolean);
+
+  if (keywords.length === 0) {
+    return "記事全体で狙うSEOキーワードを5つ程度（商品名・カテゴリ名・比較語・悩みワードなど検索ボリュームが見込める語）自分で選定してください。";
+  }
+
+  const [main, ...sub] = keywords;
+  const subLine = sub.length ? `\nサブキーワード：${sub.map((k) => `「${k}」`).join("、")}` : "";
+  return `メインキーワード：「${main}」${subLine}\nこれらのキーワードをタイトル・h2見出し・導入文・まとめに自然な形で含めてください（キーワードの詰め込みすぎは避ける）。`;
+}
 
 export function buildArticlePrompt(params: {
   displayName: string;
@@ -72,8 +91,9 @@ export function buildArticlePrompt(params: {
   primaryImageUrl?: string;
   imageUrl?: string;
   imageDescription?: string;
+  targetKeywords?: string;
 }): string {
-  const { displayName, modelNumber, links, primaryImageUrl, imageUrl, imageDescription } = params;
+  const { displayName, modelNumber, links, primaryImageUrl, imageUrl, imageDescription, targetKeywords } = params;
 
   const modelNumberLine = modelNumber ? `\n型番：${modelNumber}` : "";
   const imageLine = imageUrl
@@ -90,5 +110,6 @@ export function buildArticlePrompt(params: {
     .replace("{{YAHOO_LINK}}", links.yahoo?.url ?? "（未設定）")
     .replace("{{PRIMARY_IMAGE_URL}}", primaryImageUrl ?? "（なし）")
     .replace("{{IMAGE_LINE}}", imageLine)
+    .replace("{{KEYWORD_INSTRUCTION}}", formatKeywordInstruction(targetKeywords))
     .replace("{{IMAGE_INSTRUCTION}}", imageInstruction);
 }

@@ -20,6 +20,7 @@ export default function ProductUrlForm({ onSubmit, loading, error }: Props) {
   const [yahooUrl, setYahooUrl] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [imageDescription, setImageDescription] = useState("");
+  const [targetKeywords, setTargetKeywords] = useState("");
 
   const useEasyLink = !!moshimoEasyLinkHtml.trim();
   const canSubmit = useEasyLink || !!(productName.trim() || modelNumber.trim());
@@ -37,6 +38,7 @@ export default function ProductUrlForm({ onSubmit, loading, error }: Props) {
       yahooUrl: yahooUrl.trim() || undefined,
       imageUrl: imageUrl.trim() || undefined,
       imageDescription: imageDescription.trim() || undefined,
+      targetKeywords: targetKeywords.trim() || undefined,
     });
   }
 
@@ -180,6 +182,22 @@ export default function ProductUrlForm({ onSubmit, loading, error }: Props) {
           onChange={(e) => setImageDescription(e.target.value)}
           disabled={loading}
         />
+      </div>
+
+      <div className={styles.field}>
+        <label htmlFor="targetKeywords">
+          狙いたいキーワード <span className={styles.hint}>（任意・カンマ区切り。1つ目がメイン、残りがサブキーワード扱い）</span>
+        </label>
+        <input
+          id="targetKeywords"
+          className={styles.input}
+          type="text"
+          placeholder="例: Anker A1257 レビュー, モバイルバッテリー 薄型 おすすめ"
+          value={targetKeywords}
+          onChange={(e) => setTargetKeywords(e.target.value)}
+          disabled={loading}
+        />
+        <span className={styles.hint}>未入力の場合はClaude側がSEOキーワードを自動選定します</span>
       </div>
 
       {error && <p className={styles.error}>{error}</p>}
